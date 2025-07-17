@@ -33,6 +33,7 @@
             android:name=".MyFloatingBubbleService"
             android:exported="true"
             android:foregroundServiceType="specialUse"/>
+        <receiver android:name=".FloatingBubbleReceiver" />
 
     </application>
 

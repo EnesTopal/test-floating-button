@@ -7,16 +7,20 @@ import com.torrydo.floatingbubbleview.service.expandable.BubbleBuilder
 import com.torrydo.floatingbubbleview.service.expandable.ExpandableBubbleService
 import com.torrydo.floatingbubbleview.service.expandable.ExpandedBubbleBuilder
 import android.os.IBinder // Used internally, just for context
+import android.util.Log
 import android.view.KeyEvent
 import com.torrydo.floatingbubbleview.FloatingBubbleListener
 import com.torrydo.floatingbubbleview.helper.ViewHelper
 
 class MyFloatingBubbleService : ExpandableBubbleService() {
 
+    private var isExpanded = false
+
     override fun onCreate() {
         super.onCreate()
 //        expand()
         minimize() // Start in the minimized state
+        isExpanded = false
     }
 
     override fun configBubble(): BubbleBuilder? {
@@ -30,17 +34,20 @@ class MyFloatingBubbleService : ExpandableBubbleService() {
         val bubbleIconView = ViewHelper.fromDrawable(
             this,
             R.drawable.ic_rounded_blue_diamond, // Your icon
-            150,
-            150
+            100,
+            100
         )
 
         bubbleIconView.setOnClickListener {
-            expand()
+            toggleView()
         }
 
 
         return BubbleBuilder(this)
             .bubbleView(bubbleIconView)
+//            .bubbleCompose {
+//                BubbleCompose(expand = { toggleView() })
+//            }
             .forceDragging(true)
             .bubbleStyle(null)
             .startLocation(300, 300)
@@ -51,41 +58,36 @@ class MyFloatingBubbleService : ExpandableBubbleService() {
             .distanceToClose(80)
             .bottomBackground(true)
             .bubbleDraggable(true)
-            .addFloatingBubbleListener(object : FloatingBubbleListener {
-                override fun onFingerMove(
-                    x: Float,
-                    y: Float
-                ) {
-                }
-
-                override fun onFingerUp(
-                    x: Float,
-                    y: Float
-                ) {
-                }
-
-                override fun onFingerDown(x: Float, y: Float) {}
-            })
     }
 
     override fun configExpandedBubble(): ExpandedBubbleBuilder? {
         return ExpandedBubbleBuilder(this)
             .expandedCompose {
-                ExtendedComposeView(minimize = { minimize() })
+                ExtendedComposeView(minimize = { toggleView() })
             }
             .onDispatchKeyEvent { keyEvent ->
-                if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK) {
-                    minimize()
-//                    return@onDispatchKeyEvent true
+                if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK && isExpanded) {
+                    toggleView()
+                    return@onDispatchKeyEvent true
                 }
-//                return@onDispatchKeyEvent null
-                null
+                false
             }
             .startLocation(0, 50)
             .draggable(true)
             .fillMaxWidth(false)
             .enableAnimateToEdge(true)
             .dimAmount(0.5f)
+    }
+
+    private fun toggleView() {
+        if (isExpanded) {
+            Log.d("MyBubble", "Minimizing")
+            minimize()
+        } else {
+            Log.d("MyBubble", "Expanding")
+            expand()
+        }
+        isExpanded = !isExpanded
     }
 
     override fun onBind(intent: Intent?): IBinder? {

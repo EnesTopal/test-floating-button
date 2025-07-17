@@ -42,7 +42,7 @@ fun BubbleCompose(
     expand: () -> Unit = {}
 ) {
 
-    Button(onClick = {
+    IconButton(onClick = {
         runBlocking {
             expand()
         }
